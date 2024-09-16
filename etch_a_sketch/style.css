@@ -1,0 +1,15 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    gap: 8px;;
+}
+.canvas {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 500px;
+    height: 500px;
+}
