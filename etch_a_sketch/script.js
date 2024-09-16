@@ -2,16 +2,21 @@ const container = document.querySelector(".canvas");
 const canvasSize = document.querySelector(".canvasSize");
 let size;
 let innerContainer;
+drawCanvas(16);
 canvasSize.addEventListener("click", () => {
-    size = Number(prompt("Enter the size of the canvas (AxA): ", "16"));
+    size = Number(prompt("Enter the size (<= 100) of the canvas (AxA): ", "16"));
     // size = parseInt(size);
-    // container.removeChild(innerContainer);
     drawCanvas(size);
     
 });
 
 function drawCanvas(size) {
-    // container.removeChild(innerContainer);
+    if (innerContainer) {
+        container.removeChild(innerContainer);
+    }
+    if (size > 100) {
+        size = 100;
+    }
     innerContainer = document.createElement("div");
     container.appendChild(innerContainer);
     innerContainer.style.cssText = "display: flex; flex-direction: row; align-items: stretch; justify-content: center; flex-grow: 1"
