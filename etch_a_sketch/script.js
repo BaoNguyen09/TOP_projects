@@ -34,10 +34,19 @@ function drawCanvas(size) {
             grandChild.style.cssText = "border: 1px dotted blue; flex-grow: 1; cursor: pointer;"
             grandChild.addEventListener("mouseenter", () => {
                 // console.log(grandName);
-                grandChild.style.background = "red";
+                grandChild.style.background = randomRGB();
+                grandChild.style.opacity += 0.1;
             });
             child.appendChild(grandChild);
         }
     }
+}
+
+function randColorNum() {
+    return Math.floor(Math.random() * 256);
+}
+
+function randomRGB() {
+    return `rgb(${randColorNum()},${randColorNum()},${randColorNum()})`
 }
 
