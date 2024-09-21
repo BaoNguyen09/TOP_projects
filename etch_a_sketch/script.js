@@ -35,7 +35,7 @@ function drawCanvas(size) {
             grandChild.addEventListener("mouseenter", () => {
                 // console.log(grandName);
                 grandChild.style.background = randomRGB();
-                grandChild.style.opacity += 0.1;
+                // grandChild.style.opacity += 0.1;
             });
             child.appendChild(grandChild);
         }
