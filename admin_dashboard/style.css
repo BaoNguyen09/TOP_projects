@@ -1,3 +1,87 @@
 body {
-    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    grid-template-rows: 1fr 4.5fr;
+    margin: 0;
+}
+
+.sidebar {
+    grid-column: 1;
+    grid-row: 1/3;
+    background-color: rgb(42, 146, 231);
+    padding-left: 16px;
+    color: white;
+}
+
+#icon {
+    background-color: white;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    margin-right: 16px;
+}
+
+#navigation {
+    margin-bottom: 50px;
+}
+
+#logo {
+    margin-bottom: 30px;
+}
+
+#navigation, #additional {
+    font-size: 18px;
+    
+}
+
+.bar {
+    margin-bottom: 16px;
+}
+
+#dashboard {
+    display: inline-block;
+    font-size: 24px;
+}
+
+.header {
+    grid-column: 2;
+    grid-row: 1;
+    background-color: white;
+}
+
+.main-content {
+    background-color: whitesmoke;
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.projects {
+    grid-column: 1;
+    grid-row: 1/3;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.announcements {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.trending {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#status {
+    display: flex;
+    justify-content: space-around;
+}
+
+#activity {
+    display: flex;
+    justify-content: space-around;
 }
