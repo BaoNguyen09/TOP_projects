@@ -14,7 +14,7 @@ body {
 }
 
 #icon {
-    background-color: white;
+    background-color: rgb(234, 202, 202);
     width: 20px;
     height: 20px;
     display: inline-block;
@@ -43,11 +43,88 @@ body {
     font-size: 24px;
 }
 
+
+/* header code starts from here */
+
 .header {
     grid-column: 2;
     grid-row: 1;
     background-color: white;
+    display: grid;
+    grid-template-rows: 1fr 2fr;
+    padding-top: 16px;
+    height: 130px;
 }
+
+#status {
+    grid-row: 1;
+    display: flex;
+    /* justify-content: space-around; */
+}
+
+#search {
+    flex-grow: 2; 
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding-left: 30px;
+}
+
+#search input {
+    max-width: 400px;
+    border-radius: 15px;
+    background-color: grey;
+    border-width: 0;
+    height: 25px;
+}
+
+#personal {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#activity {
+    grid-row: 2;
+    display: flex;
+    justify-content: center;
+    gap: 500px;
+    max-height: 80px;
+    /* padding-bottom: 8px; */
+}
+
+#small {
+    font-weight: bold;
+    font-size: small;
+}
+
+#large {
+    font-weight: bold;
+    font-size: large;
+}
+
+#actions {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-around; */
+    gap: 20px;
+    /* flex-grow: 1; */
+}
+
+#intro {
+    /* flex-grow: 1; */
+}
+
+#actions button {
+    background-color: lightblue;
+    border-radius: 20px;
+    color: white;
+    width: 100px;
+    height: 30px;
+}
+
+/* Main content code starts from here */
 
 .main-content {
     background-color: whitesmoke;
@@ -59,11 +136,45 @@ body {
 .projects {
     grid-column: 1;
     grid-row: 1/3;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.card {
+    background-color: white;
+    padding: 32px 16px 16px 16px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-rows: 4fr 1fr;
+    max-height: 150px;
+}
+
+.projectDesc {
+    grid-row: 1;
+}
+
+.title {
+    font-weight: bold;
+    margin: 0;
+}
+
+.desc {
+    font-style: italic;
+    color: gray;
+    font-size: 15px;
+    margin: 0;
+}
+
+.icons {
+    display: flex;
+    justify-content: end;
+    /* align-items: end; */
 }
 
 .announcements {
@@ -76,12 +187,3 @@ body {
     grid-row: 2;
 }
 
-#status {
-    display: flex;
-    justify-content: space-around;
-}
-
-#activity {
-    display: flex;
-    justify-content: space-around;
-}
