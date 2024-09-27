@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="book_display"></div>
+    <dialog>
+        <p>Add a book using the form below</p>
+        <form method="dialog">
+            <label for="title">Title: </label>
+            <input id="title" name="title" type="text" required>
+
+            <label for="author">Author: </label>
+            <input id="author" name="author" type="text" required>
+
+            <label for="pages">Pages: </label>
+            <input id="pages" name="pages" type="number" required>
+
+            <label for="read">Read? </label>
+            <input id="read" name="read" type="checkbox">
+
+            <button type="submit">Submit</button>
+        </form>
+    </dialog>
+    <button onclick="openModal()" id="showButton">Add Book</button>
+
+
+
+
+    <script src="script.js"></script>
+</body>
+</html>
