@@ -15,17 +15,35 @@ function Book(title, author, pages, read) {
 }
 
 function addBookToLibrary(title, author, pages, read) {
+    // console.log(title);
     const newBook = new Book(title, author, pages, read);
     myLibrary.push(newBook);
 }
 
+function formSubmission(event) {
+    event.preventDefault();
+    console.log(event.target.title.value);
+    let title = event.target.title.value;
+    let author = event.target.author.value;
+    let pages = event.target.pages.value;
+    let read = event.target.read.value;
+    console.log(read);
+    addBookToLibrary(title, author, pages, read);
+    bookDisplay();
+    document.querySelector("form").reset();
+    // console.log(myLibrary);
+}
+
 function bookDisplay() {
     let container = document.querySelector(".book_display");
-    for (let book of myLibrary) {
+    // for (let book of myLibrary) {
+    if (myLibrary.length > 0) {
         let child = document.createElement('h2');
-        child.textContent = book.info();
+        child.textContent = myLibrary[myLibrary.length-1].info();
         container.appendChild(child);
     }
+        
+    // }
 }
 
 function openModal() {
@@ -38,9 +56,15 @@ function openModal() {
     // })
 }
 
-addBookToLibrary('The Hobbit', 'J.R.R. Tolikein', 295, false);
-addBookToLibrary('Harry Potter', 'J.K Rowling', 682, true);
+function closeModal() {
+    
+    const dialog = document.querySelector("dialog");
+    dialog.close();
+}
+
+// addBookToLibrary('The Hobbit', 'J.R.R. Tolikein', 295, false);
+// addBookToLibrary('Harry Potter', 'J.K Rowling', 682, true);
 // console.log(myLibrary);
 // bookDisplay();
-bookDisplay();
+document.onload = bookDisplay();
 

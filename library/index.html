@@ -10,7 +10,7 @@
     <div class="book_display"></div>
     <dialog>
         <p>Add a book using the form below</p>
-        <form method="dialog">
+        <form onsubmit="formSubmission(event)">
             <label for="title">Title: </label>
             <input id="title" name="title" type="text" required>
 
@@ -21,9 +21,9 @@
             <input id="pages" name="pages" type="number" required>
 
             <label for="read">Read? </label>
-            <input id="read" name="read" type="checkbox">
+            <input id="read" name="read" type="checkbox" value="true">
 
-            <button type="submit">Submit</button>
+            <button type="submit" onclick="closeModal()">Submit</button>
         </form>
     </dialog>
     <button onclick="openModal()" id="showButton">Add Book</button>
