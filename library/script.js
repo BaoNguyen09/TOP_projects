@@ -8,10 +8,15 @@ function Book(title, author, pages, read) {
 
     this.info = function() {
         let res = `${this.title} by ${this.author}, ${Number(this.pages)} pages, `;
-        if (read) res += "have read";
+        if (this.read) res += "have read";
         else res += "not read yet";
         return res;
     }
+
+}
+
+Book.prototype.changeStatus = function() {
+    this.read =  !this.read;
 }
 
 function addBookToLibrary(title, author, pages, read) {
@@ -46,13 +51,27 @@ function bookDisplay() {
         let Id = myLibrary.length-1;
         child.setAttribute("id", `book_${Id}`);
         child.textContent = myLibrary[Id].info();
+
         let deleteButton = document.createElement('button');
-        deleteButton.textContent = "Delete Book"
+        deleteButton.textContent = "Delete Book";
         deleteButton.addEventListener('click', () => {
             myLibrary.pop(Id);
-            bookDisplay();
+            container.removeChild(child);
         });
+
+        let statusToggle = document.createElement('button');
+        statusToggle.textContent = "Change Read Status";
+        statusToggle.addEventListener("click", () => {
+            myLibrary[Id].changeStatus();
+            console.log(myLibrary[Id].read);
+            console.log(myLibrary[Id].info());
+            child.textContent = myLibrary[Id].info();
+            child.appendChild(deleteButton);
+            child.appendChild(statusToggle);
+        });
+
         child.appendChild(deleteButton);
+        child.appendChild(statusToggle);
         container.appendChild(child);
     }
         
