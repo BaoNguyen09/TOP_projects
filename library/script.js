@@ -26,7 +26,7 @@ function formSubmission(event) {
     let title = event.target.title.value;
     let author = event.target.author.value;
     let pages = event.target.pages.value;
-    let read = event.target.read.value;
+    let read = event.target.read.checked;
     console.log(read);
     addBookToLibrary(title, author, pages, read);
     bookDisplay();
@@ -34,12 +34,25 @@ function formSubmission(event) {
     // console.log(myLibrary);
 }
 
+function removeBook(Id) {
+    
+}
+
 function bookDisplay() {
     let container = document.querySelector(".book_display");
     // for (let book of myLibrary) {
     if (myLibrary.length > 0) {
         let child = document.createElement('h2');
-        child.textContent = myLibrary[myLibrary.length-1].info();
+        let Id = myLibrary.length-1;
+        child.setAttribute("id", `book_${Id}`);
+        child.textContent = myLibrary[Id].info();
+        let deleteButton = document.createElement('button');
+        deleteButton.textContent = "Delete Book"
+        deleteButton.addEventListener('click', () => {
+            myLibrary.pop(Id);
+            bookDisplay();
+        });
+        child.appendChild(deleteButton);
         container.appendChild(child);
     }
         
