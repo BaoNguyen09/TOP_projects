@@ -8,15 +8,15 @@ function Gameboard() {
         }
     }
 
-    console.log(board[0]);
+    // console.log(board[0]);
 
     const getBoard = () => board;
 
-    const ticTheToe = (column, row, player) => {
-        if (board[row][column] != null) {
+    const addMarker = (column, row, player) => {
+        if (board[row][column].getValue() == null) {
             board[row][column].addMove(player);
         } else {
-            // handle invalid move
+            alert("Invalid Move !!!");
             return;
         }
     }
@@ -27,7 +27,7 @@ function Gameboard() {
         console.log(boardWithCellValues);
     }
 
-    return { getBoard, ticTheToe, printBoard };
+    return { getBoard, addMarker, printBoard };
 }
 
 function Cell() {
@@ -40,7 +40,7 @@ function Cell() {
     const getValue = () => value;
 
     return {
-        ticTheToe,
+        addMove,
         getValue
     }
 }
@@ -50,6 +50,7 @@ function GameController(
     playerTwoName = "Player Two"
 ) {
     const board = Gameboard();
+    let markerCounter = 0;
 
     const players = [
         {
@@ -75,11 +76,67 @@ function GameController(
         console.log(`${getActivePlayer().name}'s turn.`)
     }
 
+    const checkWinner = (marker) => {
+    
+        let markerChecker = [marker, marker, marker];
+        console.log(markerChecker);
+        // Check all the rows
+        board.getBoard().forEach(row => {
+            let r = [row[0].getValue(), row[1].getValue(), row[2].getValue()];
+            if (JSON.stringify(r) == JSON.stringify(r)) {
+                return true;
+            }
+        })
+
+        // Check all the columns
+        for (let i=0; i<3; i++) {
+            let col = [];
+            for (let j=0; j<3; j++) {
+                col.push(board.getBoard()[j][i].getValue());
+            }
+            if (col.every((val) => val == marker)) {
+                return true;
+            }
+        }
+
+        // Check 2 diagonal lines
+        let topLeft = board.getBoard()[0][0].getValue();
+        let topRigh = board.getBoard()[0][2].getValue();
+        let center = board.getBoard()[1][1].getValue();
+        let bottomLeft = board.getBoard()[2][0].getValue();
+        let bottomRight = board.getBoard()[2][2].getValue();
+        let firstLine = [topLeft, center, bottomRight];
+        let secondLine = [topRigh, center, bottomLeft];
+        console.log(firstLine);
+
+        if ( JSON.stringify(firstLine) == JSON.stringify(checkWinner) 
+            || JSON.stringify(secondLine) == JSON.stringify(checkWinner)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    
+    
+
     const playRound = (row, column) => {
+        markerCounter += 1;
         console.log(
             `Drawing ${getActivePlayer().token}'s token into position (${row}, ${column})`
         );
-        board.ticTheToe(column, row, getActivePlayer().token);
+        board.addMarker(column, row, getActivePlayer().token);
+
+        // Check for winner and handle the win message
+        if (checkWinner(getActivePlayer().token)) {
+            alert(`Player with token: ${getActivePlayer().token} WIN`);
+            // stop and reset the game
+        } 
+      
+        if (markerCounter == 9) {
+            alert('Draw!');
+            // stop and reset the game
+        }
 
         switchPlayerTurn();
         printNewRound();
@@ -93,3 +150,55 @@ function GameController(
         getBoard: board.getBoard
     };
 }
+
+function ScreenController() {
+
+    const game = GameController();
+    const playerTurnDiv = document.querySelector('.turn');
+    const boardDiv = document.querySelector('.board');
+
+    const updateScreen = () => {
+        boardDiv.textContent = "";
+        const board = game.getBoard();
+        const activePlayer = game.getActivePlayer();
+
+        // Display player's turn
+        playerTurnDiv.textContent = `${activePlayer.name}'s turn`;
+
+        // Render board squares
+        board.forEach((row, r) => {
+            row.forEach((cell, col) => {
+                // Anything clickable should be a button!!
+                const cellButton = document.createElement('button');
+                cellButton.classList.add('cell');
+                // Create a data attribute to identify the col and row
+                cellButton.dataset.column = col;
+                cellButton.dataset.row = r;
+                cellButton.textContent = cell.getValue();
+                boardDiv.appendChild(cellButton);
+            })
+        })
+    }
+
+    // Add event listener for the board
+    function clickHandlerBoard(e) {
+        const selectedColumn = e.target.dataset.column;
+        const selectedRow = e.target.dataset.row;
+        // Make sure I've clicked the cell, not the gaps in between
+        if (!selectedColumn || !selectedRow) {
+            alert("Please click the cell !");
+            return;
+        };
+
+        game.playRound(selectedRow, selectedColumn);
+        updateScreen();
+    }
+
+    boardDiv.addEventListener("click", clickHandlerBoard);
+
+    // Initial render
+    updateScreen();
+    // Don't need to return anything from this module because everything is encapsulated
+}
+
+ScreenController();
