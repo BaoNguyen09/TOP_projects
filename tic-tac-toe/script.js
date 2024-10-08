@@ -79,14 +79,15 @@ function GameController(
     const checkWinner = (marker) => {
     
         let markerChecker = [marker, marker, marker];
-        console.log(markerChecker);
+        // console.log(markerChecker);
         // Check all the rows
-        board.getBoard().forEach(row => {
+        for (let row of board.getBoard()) {
             let r = [row[0].getValue(), row[1].getValue(), row[2].getValue()];
-            if (JSON.stringify(r) == JSON.stringify(r)) {
+            if (JSON.stringify(r) == JSON.stringify(markerChecker)) {
+                console.log('Win by row');
                 return true;
             }
-        })
+        }
 
         // Check all the columns
         for (let i=0; i<3; i++) {
@@ -95,6 +96,7 @@ function GameController(
                 col.push(board.getBoard()[j][i].getValue());
             }
             if (col.every((val) => val == marker)) {
+                console.log('Win by column');
                 return true;
             }
         }
@@ -107,18 +109,23 @@ function GameController(
         let bottomRight = board.getBoard()[2][2].getValue();
         let firstLine = [topLeft, center, bottomRight];
         let secondLine = [topRigh, center, bottomLeft];
-        console.log(firstLine);
+        // console.log(firstLine);
 
-        if ( JSON.stringify(firstLine) == JSON.stringify(checkWinner) 
-            || JSON.stringify(secondLine) == JSON.stringify(checkWinner)) {
+        if ( JSON.stringify(firstLine) == JSON.stringify(markerChecker) 
+            || JSON.stringify(secondLine) == JSON.stringify(markerChecker)) {
+            console.log('Win by diagonal');
             return true;
         }
 
         return false;
     }
 
-    
-    
+    const resetGame = () => {
+        markerCounter = 0;  // Reset marker counter
+        activePlayer = players[0];  // Reset active player to Player One (X)
+        board.getBoard().forEach(row => row.forEach(cell => cell.addMove(null))); // Clear the board
+        printNewRound();  // Print a fresh board
+    }
 
     const playRound = (row, column) => {
         markerCounter += 1;
@@ -128,14 +135,25 @@ function GameController(
         board.addMarker(column, row, getActivePlayer().token);
 
         // Check for winner and handle the win message
+        
         if (checkWinner(getActivePlayer().token)) {
-            alert(`Player with token: ${getActivePlayer().token} WIN`);
-            // stop and reset the game
+            console.log(`Active player: ${getActivePlayer().token}`)
+            setTimeout(() => {
+                alert(`Player with token: ${getActivePlayer().token} WIN`);
+                resetGame();
+                // ScreenController().updateScreen();
+            }, 100);
+            return;
+            
         } 
       
         if (markerCounter == 9) {
-            alert('Draw!');
-            // stop and reset the game
+            setTimeout(() => {
+                alert('Draw!');
+                resetGame();
+                // ScreenController().updateScreen();
+            }, 100);
+            return;
         }
 
         switchPlayerTurn();
@@ -199,6 +217,10 @@ function ScreenController() {
     // Initial render
     updateScreen();
     // Don't need to return anything from this module because everything is encapsulated
+    return {
+        updateScreen,
+    }
 }
+
 
 ScreenController();
