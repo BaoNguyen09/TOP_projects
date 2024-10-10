@@ -1,38 +1,64 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const websiteURL = "https://live-azs-nursing.pantheonsite.io/resources/research";
+const websiteURLs = [
+  'https://live-azs-nursing.pantheonsite.io/phd-admissions',
+  'https://live-azs-nursing.pantheonsite.io/resources/uahs-room-scheduling',
+  'https://live-azs-nursing.pantheonsite.io/predicting-adequate-response-to-oxytocin-estudio',
+  'https://live-azs-nursing.pantheonsite.io/resources/research-human-subjects-templates',
+  'https://live-azs-nursing.pantheonsite.io/mothers-babies-es',
+  'https://live-azs-nursing.pantheonsite.io/mothers-babies',
+  'https://live-azs-nursing.pantheonsite.io/resources/space-facilities',
+  'https://live-azs-nursing.pantheonsite.io/research',
+  'https://live-azs-nursing.pantheonsite.io/policies/exam-guidelines-nhe-faculty',
+];
+
 
 // 1. Check all links for 404 errors
-async function checkLinksForErrors() {
+async function checkLinksForErrors(websiteURL) {
   let errorLinks = [];
   try {
     const response = await axios.get(websiteURL);
     const $ = cheerio.load(response.data);
 
-    const links = $('a'); // Get all the anchor tags
+    const links = $("#main main a"); // Get all the anchor tags within the main content
     console.log(`Found ${links.length} links on the page.`);
 
     for (let i = 0; i< links.length; i++) {
       let link = $(links[i]).attr('href');
+      if (link === undefined) {
+        console.log(link);
+        continue;
+      }
       // console.log(link);
-      if (link.startsWith("/")) {
+      if (link.startsWith("/")) { // for relative links
         link = "https://live-azs-nursing.pantheonsite.io" + link;
       }
-      if (link.includes('www.nursing.arizona.edu')) {
+      if (link.includes('www.nursing.arizona.edu')) { // for link from old page
         console.log(`Nursing error: ${link}`);
+        link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
+        // Optionally, ensure the link starts with 'https://'
+        if (!link.startsWith('https://')) {
+          link = 'https://' + link;
+        }
       }
-      if (link.includes('@email.arizona.edu')) {
+      if (link.includes('@email.arizona.edu')) { // for old email address
         console.log(`Email error: ${link}`);
+        continue;
       }
 
       // Skip if link is not valid or is an internal link/anchor
-      if (!link || link.startsWith('#') || link.startsWith('mailto:')) {
+      if (!link || link.startsWith('#') || link.startsWith('mailto:') || link.startsWith('tel:')) {
         console.log(`This is a special link: ${link}`);
+        continue;
       };
 
       try {
-        const res = await axios.get(link);
+        const res = await axios.get(link, {
+          headers: { // use this to mimic a real browser to bypass 403 error by server
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0'
+          }
+        });
         if (res.status == 404) {
           errorLinks.push(link);
           // console.log(`404 error found at: ${link}`);
@@ -40,9 +66,9 @@ async function checkLinksForErrors() {
       } catch (e) {
         if (e == "AxiosError: Request failed with status code 404") {
           errorLinks.push(link);
-        } else if (e == "AxiosError: Unsupported protocol mailto: ") {
-          errorLinks.push(link);
-        }
+        } // else if (e == "AxiosError: Unsupported protocol mailto: ") {
+        //   errorLinks.push(link);
+        // }
         else console.log(`Error fetching link ${link}: ${e}`);
       }
     }
@@ -129,65 +155,13 @@ function displayContent(error1) {
 
 // Run all the checks
 (async function runChecks() {
-  console.log("Starting checks...");
-  const error1 = await checkLinksForErrors();
-  // const error2 = await checkForSpecificDomain();
-  // const error3 = await checkForEmailPattern();
-  displayContent(error1);
-})();
-
-// const fetch = require('node-fetch');
-
-// function extractURL() {
-//     const relativeLinks = Array.from(document.querySelectorAll("a"))
-//         .map(link => link.getAttribute('href'))
-//         .filter(href => href.startsWith('/sites'));
-//     console.log(relativeLinks);
-//     return relativeLinks;
-// }
-
-// function checkLink(url) {
-//     fetch(url)
-//       .then(response => {
-//         if (response.ok) {
-//           console.log('Link is working:');
-//         } else if (response.status === 404) {
-//           console.log('Link not found (404):\n', url);
-//         } else {
-//           console.log('Other error:', response.status, url);
-//         }
-//       })
-//       .catch(error => {
-//         console.error('Error checking link:', error, url);
-//       });
-//   }
-
-//   async function checkLink1(url) {
-//     try {
-//         const response = await fetch(url);
-//         const result = response.status === 200
-//             ? `Page exists: ${url}\n`
-//             : `Page not found (status ${response.status}): ${url}\n`;
-//         console.log(result);
-//         fs.appendFileSync(logFile, result);
-//     } catch (error) {
-//         const errorResult = `Error fetching ${url}: ${error.message}\n`;
-//         console.error(errorResult);
-//         fs.appendFileSync(logFile, errorResult);
-//     }
-// }
-
-// async function checkAllLinks() {
-//     fs.writeFileSync(logFile, ''); // Clear previous log
-//     const promises = links.map(link => checkLink(`${rootURL}${link}`));
-//     await Promise.all(promises);
-// }
   
-// let rootURL = 'https://live-azs-nursing.pantheonsite.io';
-// //   checkLink(`${rootURL}/sites/default/files/2024-2025%20Part-Time%20DfgNP%20PMHNP%20Program%20of%20Study.pdf`);
-
-// let links = extractURL();
-// for (let link of links) {
-//     console.log(`Checking URL: ${rootURL}${link}`);
-//     checkLink(`${rootURL}${link}`);
-// }
+  for (link of websiteURLs) {
+    console.log(`Starting checks... ${link}`);
+    const error1 = await checkLinksForErrors(link);
+    displayContent(error1);
+    console.log("");
+    console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++");
+  }
+  
+})();
