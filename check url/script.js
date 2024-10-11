@@ -1,22 +1,31 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const xlsx = require('xlsx');
 
-const websiteURLs = [
-  'https://live-azs-nursing.pantheonsite.io/phd-admissions',
-  'https://live-azs-nursing.pantheonsite.io/resources/uahs-room-scheduling',
-  'https://live-azs-nursing.pantheonsite.io/predicting-adequate-response-to-oxytocin-estudio',
-  'https://live-azs-nursing.pantheonsite.io/resources/research-human-subjects-templates',
-  'https://live-azs-nursing.pantheonsite.io/mothers-babies-es',
-  'https://live-azs-nursing.pantheonsite.io/mothers-babies',
-  'https://live-azs-nursing.pantheonsite.io/resources/space-facilities',
-  'https://live-azs-nursing.pantheonsite.io/research',
-  'https://live-azs-nursing.pantheonsite.io/policies/exam-guidelines-nhe-faculty',
-];
+function readExcel(filePath) {
+  const workbook = xlsx.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  return xlsx.utils.sheet_to_csv(sheet, { header: 1}); // convert to 2D array
+}
 
+function writeExcel(results, outputFilePath) {
+  const workbook = xlsx.utils.book_new();
+  // const header = ["links", "nursing errors", "email errors", "404 errors"];
+  // worksheet = [header];
+  // const data = xlsx.utils.aoa_to_sheet(results); // convert 2D arr back to excel
+  // worksheet.push(data);
+  worksheet = xlsx.utils.aoa_to_sheet(results); // convert 2D arr back to excel
+  xlsx.utils.book_append_sheet(workbook, worksheet, 'Results');
+  xlsx.writeFile(workbook, outputFilePath);
+}
 
-// 1. Check all links for 404 errors
+// Check all links for errors
 async function checkLinksForErrors(websiteURL) {
-  let errorLinks = [];
+  let errorLinks = [websiteURL];
+  let emailErrors = "";
+  let nursingErros = "";
+  let pnfErrors = "";
   try {
     const response = await axios.get(websiteURL);
     const $ = cheerio.load(response.data);
@@ -30,20 +39,29 @@ async function checkLinksForErrors(websiteURL) {
         console.log(link);
         continue;
       }
-      // console.log(link);
-      if (link.startsWith("/")) { // for relative links
+
+      if (link.startsWith("//")) { // for some special urls
+        link = "https:" + link;
+      } else if (link.startsWith("/")) { // for relative links
         link = "https://live-azs-nursing.pantheonsite.io" + link;
       }
+
       if (link.includes('www.nursing.arizona.edu')) { // for link from old page
         console.log(`Nursing error: ${link}`);
+        nursingErros += `${link}\n`
+
+        // continue to check if the link on test site exists
         link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
+
         // Optionally, ensure the link starts with 'https://'
         if (!link.startsWith('https://')) {
           link = 'https://' + link;
         }
       }
+
       if (link.includes('@email.arizona.edu')) { // for old email address
         console.log(`Email error: ${link}`);
+        emailErrors += `${link}\n`;
         continue;
       }
 
@@ -60,108 +78,45 @@ async function checkLinksForErrors(websiteURL) {
           }
         });
         if (res.status == 404) {
-          errorLinks.push(link);
-          // console.log(`404 error found at: ${link}`);
+          pnfErrors += `${link}\n`;
+          console.log(`404 error found at: ${link}`);
         }
       } catch (e) {
         if (e == "AxiosError: Request failed with status code 404") {
-          errorLinks.push(link);
-        } // else if (e == "AxiosError: Unsupported protocol mailto: ") {
-        //   errorLinks.push(link);
-        // }
+          // errorLinks.push(link);
+        }
         else console.log(`Error fetching link ${link}: ${e}`);
       }
     }
   } catch (e) {
     console.error(`Could not fetch the main page: ${e.message}`);
   }
+  errorLinks.push(nursingErros, emailErrors, pnfErrors);
   return errorLinks;
 }
-
-// 2. Check if there's a link from the domain: www.nursing.arizona.edu
-async function checkForSpecificDomain() {
-  let errorLinks = [];
-  try {
-      const response = await axios.get(websiteURL);
-      const $ = cheerio.load(response.data);
-
-      const links = $('a');
-      const domainToFind = 'www.nursing.arizona.edu';
-      let foundLink = false;
-
-      links.each((i, link) => {
-          const href = $(link).attr('href');
-          if (href && href.includes(domainToFind)) {
-              errorLinks.push(href);
-              console.log(`Link found from domain ${domainToFind}: ${href}`);
-              foundLink = true;
-          }
-      });
-
-      if (!foundLink) {
-          console.log(`No link from the domain ${domainToFind} was found.`);
-      }
-  } catch (error) {
-      console.error(`Error checking domain links: ${error.message}`);
-  }
-  return errorLinks;
-}
-
-// 3. Check if any email matches the pattern: @email.arizona.edu
-async function checkForEmailPattern() {
-  let errorLinks = [];
-  try {
-      const response = await axios.get(websiteURL);
-      const $ = cheerio.load(response.data);
-
-      const bodyText = $('body').text(); // Get all text from the body
-      const emailPattern = /[a-zA-Z0-9._%+-]+@email\.arizona\.edu/g;
-      const emails = bodyText.match(emailPattern);
-
-      if (emails) {
-          errorLinks.push(emails);
-          console.log(`Email(s) found: ${emails.join(', ')}`);
-      } else {
-          console.log("No emails matching the pattern @email.arizona.edu found.");
-      }
-  } catch (error) {
-      console.error(`Error checking for emails: ${error.message}`);
-  }
-  return errorLinks;
-}
-
-function displayContent(error1) {
-  // let show1 = document.querySelector(".404_error");
-  // let show2 = document.querySelector(".email_error");
-  // let show3 = document.querySelector(".nursing_error");
-  console.log("---------------------------------------------------------------");
-  console.log("Links with 404 Error");
-  error1.forEach((link) => {
-    console.log(link);
-  })
-
-  // console.log("Links with Email Error");
-  // error2.forEach((link) => {
-  //   console.log(link);
-  // })
-
-  // console.log("Links with nursing Error");
-  // error3.forEach((link) => {
-  //   console.log(link);
-  // })
-}
-
-
 
 // Run all the checks
-(async function runChecks() {
-  
-  for (link of websiteURLs) {
+(async function main() {
+
+  const inputFilePath = './links.xlsx';
+  const outputFilePath = './results.xlsx';
+  results = [];
+
+  // Step 1: read links from Excel
+  let links = readExcel(inputFilePath);
+  links = links.split("\n"); // split into array of string links
+
+  // Step 2: check links
+  for (link of links) {
     console.log(`Starting checks... ${link}`);
     const error1 = await checkLinksForErrors(link);
-    displayContent(error1);
-    console.log("");
-    console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    results.push(error1);
   }
+  console.log(results);
+
+  // Step 3: write results to Excel
+  writeExcel(results, outputFilePath);
+
+  console.log("Finish!");
   
 })();
