@@ -7,6 +7,25 @@ function readExcel(filePath) {
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   return xlsx.utils.sheet_to_csv(sheet, { header: 1}); // convert to 2D array
+  
+}
+
+function extractLinks(filePath) {
+  const workbook = xlsx.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const sheetData = xlsx.utils.sheet_to_json(sheet, { header: 1}); // convert to 2D array
+  sheetData.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      const cellRef = xlsx.utils.encode_cell({ r: rowIndex, c: colIndex });
+      const cellData = sheet[cellRef];
+      // console.log(cellData);
+      let link = cellData.v;
+      link = link.replace("https://live-azs-nursing.pantheonsite.io", "");
+      console.log(link);
+    })
+    
+  });
 }
 
 function writeExcel(results, outputFilePath) {
@@ -101,15 +120,19 @@ async function checkLinksForErrors(websiteURL) {
   const inputFilePath = './links.xlsx';
   const outputFilePath = './results.xlsx';
   results = [];
+  readExcel(inputFilePath);
 
   // Step 1: read links from Excel
   let links = readExcel(inputFilePath);
   links = links.split("\n"); // split into array of string links
 
   // Step 2: check links
-  for (link of links) {
+  for (let i = 0; i <= 10; i++) {
+    link = links[i];
     console.log(`Starting checks... ${link}`);
+    link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
     const error1 = await checkLinksForErrors(link);
+
     results.push(error1);
   }
   console.log(results);
