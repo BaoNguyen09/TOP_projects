@@ -1,6 +1,4 @@
-class ToDoItem {
-
-    
+export class ToDoItem {
     constructor(title, description, dueDate, priority) {
         this.title = title;
         this.description = description;
@@ -8,7 +6,7 @@ class ToDoItem {
         this.priority = priority;
     }
 
-
-
-
+    print() {
+        console.log(`${this.title} + ${this.description} + ${this.dueDate} + ${this.priority}`);
+    }
 }
