@@ -1,13 +1,15 @@
 class Project {
+    static counter = 0;
 
     constructor(lists, title, note) {
+        this.id = Project.counter++;
         this.lists = lists;
         this.title = title;
         this.note = note;
     }
 
     print() {
-        console.log(`This is project: ${this.title}. Here are some notes: \n${this.note}`);
+        console.log(`This is project: ${this.title}(${this.id}). Here are some notes: \n${this.note}`);
         for (let list of this.lists) {
             list.print();
         }
