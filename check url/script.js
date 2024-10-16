@@ -40,11 +40,12 @@ function writeExcel(results, outputFilePath) {
 }
 
 // Check all links for errors
-async function checkLinksForErrors(websiteURL) {
+async function checkLinksForErrors(websiteURL, internalLinks) {
   let errorLinks = [websiteURL];
   let emailErrors = "";
   let nursingErros = "";
   let pnfErrors = "";
+  internalLink = false;
   try {
     const response = await axios.get(websiteURL);
     const $ = cheerio.load(response.data);
@@ -62,6 +63,7 @@ async function checkLinksForErrors(websiteURL) {
       if (link.startsWith("//")) { // for some special urls
         link = "https:" + link;
       } else if (link.startsWith("/")) { // for relative links
+        internalLink = true;
         link = "https://live-azs-nursing.pantheonsite.io" + link;
       }
 
@@ -70,6 +72,7 @@ async function checkLinksForErrors(websiteURL) {
         nursingErros += `${link}\n`
 
         // continue to check if the link on test site exists
+        internalLink = true;
         link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
 
         // Optionally, ensure the link starts with 'https://'
@@ -99,10 +102,17 @@ async function checkLinksForErrors(websiteURL) {
         if (res.status == 404) {
           pnfErrors += `${link}\n`;
           console.log(`404 error found at: ${link}`);
+        } else if (res.status == 403) {
+          pnfErrors += `${link}\n`;
+          console.log(`403 error found at: ${link}`);
         }
       } catch (e) {
         if (e == "AxiosError: Request failed with status code 404") {
           // errorLinks.push(link);
+          
+        } else if (link.includes("live-azs-nursing.pantheonsite.io") && e == "AxiosError: Request failed with status code 403") {
+          // check invalid internal links
+          pnfErrors += `${link}\n`;
         }
         else console.log(`Error fetching link ${link}: ${e}`);
       }
@@ -111,6 +121,13 @@ async function checkLinksForErrors(websiteURL) {
     console.error(`Could not fetch the main page: ${e.message}`);
   }
   errorLinks.push(nursingErros, emailErrors, pnfErrors);
+  if (internalLink) {
+    internalLinks.push("Yes and completed");
+  } else if (pnfErrors != "") {
+    internalLinks.push("Yes, need to complete");
+  } else {
+    internalLinks.push("No");
+  }
   return errorLinks;
 }
 
@@ -120,6 +137,7 @@ async function checkLinksForErrors(websiteURL) {
   const inputFilePath = './links.xlsx';
   const outputFilePath = './results.xlsx';
   results = [];
+  internalLinks = [];
   readExcel(inputFilePath);
 
   // Step 1: read links from Excel
@@ -127,18 +145,21 @@ async function checkLinksForErrors(websiteURL) {
   links = links.split("\n"); // split into array of string links
 
   // Step 2: check links
-  for (let i = 0; i <= 10; i++) {
+  for (let i = 0; i < links.length; i++) {
     link = links[i];
-    console.log(`Starting checks... ${link}`);
-    link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
-    const error1 = await checkLinksForErrors(link);
+    console.log(`\nStarting checks... ${link}`);
+    // link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
+    const error1 = await checkLinksForErrors(link, internalLinks);
 
     results.push(error1);
   }
-  console.log(results);
+  internalLinks.forEach((link) => {
+    console.log(link);
+  })
+  // console.log(results);
 
   // Step 3: write results to Excel
-  writeExcel(results, outputFilePath);
+  // writeExcel(results, outputFilePath);
 
   console.log("Finish!");
   
