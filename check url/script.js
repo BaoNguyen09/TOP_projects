@@ -153,6 +153,7 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
 
     results.push(error1);
   }
+  console.log();
   internalLinks.forEach((link) => {
     console.log(link);
   })
