@@ -20,9 +20,15 @@ function extractLinks(filePath) {
       const cellRef = xlsx.utils.encode_cell({ r: rowIndex, c: colIndex });
       const cellData = sheet[cellRef];
       // console.log(cellData);
-      let link = cellData.v;
-      link = link.replace("https://live-azs-nursing.pantheonsite.io", "");
-      console.log(link);
+      try {
+        let link = cellData.l.Target;
+        // link = link.replace("https://www.nursing.arizona.edu", "https://live-azs-nursing.pantheonsite.io");  // generate links of test site based on old site
+        link = link.replace("https://live-azs-nursing.pantheonsite.io", ""); // get relative path
+        console.log(link);
+      } catch(e) {
+        console.log("Link Invalid!");
+      }
+      
     })
     
   });
@@ -46,6 +52,8 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
   let nursingErros = "";
   let pnfErrors = "";
   internalLink = false;
+  console.log(websiteURL);
+
   try {
     const response = await axios.get(websiteURL);
     const $ = cheerio.load(response.data);
@@ -54,7 +62,9 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
     console.log(`Found ${links.length} links on the page.`);
 
     for (let i = 0; i< links.length; i++) {
+      
       let link = $(links[i]).attr('href');
+      console.log(link);
       if (link === undefined) {
         console.log(link);
         continue;
@@ -132,13 +142,13 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
 }
 
 // Run all the checks
-(async function main() {
+async function main() {
 
   const inputFilePath = './links.xlsx';
   const outputFilePath = './results.xlsx';
   results = [];
   internalLinks = [];
-  readExcel(inputFilePath);
+  // readExcel(inputFilePath);
 
   // Step 1: read links from Excel
   let links = readExcel(inputFilePath);
@@ -153,7 +163,7 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
 
     results.push(error1);
   }
-  console.log();
+  console.log(internalLinks);
   internalLinks.forEach((link) => {
     console.log(link);
   })
@@ -164,4 +174,11 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
 
   console.log("Finish!");
   
-})();
+};
+
+async function convertLinks() {
+  const inputFilePath = './links.xlsx';
+  extractLinks(inputFilePath);
+}
+
+main();
