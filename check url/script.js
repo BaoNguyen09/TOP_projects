@@ -36,7 +36,7 @@ function extractLinks(filePath) {
 
 function writeExcel(results, outputFilePath) {
   const workbook = xlsx.utils.book_new();
-  // const header = ["links", "nursing errors", "email errors", "404 errors"];
+  // const header = ["links", "nursing errors", "email errors", "404 errors", "403 errors"];
   // worksheet = [header];
   // const data = xlsx.utils.aoa_to_sheet(results); // convert 2D arr back to excel
   // worksheet.push(data);
@@ -51,8 +51,9 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
   let emailErrors = "";
   let nursingErros = "";
   let pnfErrors = "";
-  internalLink = false;
-  console.log(websiteURL);
+  let linkBlockedErrors = "";
+  let internalLink = false;
+  let internalLinkErr = false;
 
   try {
     const response = await axios.get(websiteURL);
@@ -64,7 +65,7 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
     for (let i = 0; i< links.length; i++) {
       
       let link = $(links[i]).attr('href');
-      console.log(link);
+      // Dealing with link formatting 
       if (link === undefined) {
         console.log(link);
         continue;
@@ -107,22 +108,36 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
         const res = await axios.get(link, {
           headers: { // use this to mimic a real browser to bypass 403 error by server
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0'
-          }
+          }, 
+          timeout: 10000,
         });
-        if (res.status == 404) {
-          pnfErrors += `${link}\n`;
-          console.log(`404 error found at: ${link}`);
-        } else if (res.status == 403) {
-          pnfErrors += `${link}\n`;
-          console.log(`403 error found at: ${link}`);
-        }
+        // if (res.status == 404) {
+        //   pnfErrors += `${link}\n`;
+        //   console.log(`404 error found at: ${link}`);
+        // } else if (res.status == 403) {
+        //   pnfErrors += `${link}\n`;
+        //   console.log(`403 error found at: ${link}`);
+        // }
+        // if (res.status == 403) {
+        //   console.log(`403 error found 1 at: ${link}`);
+        //   linkBlockedErrors += `${link}\n`;
+        //   if (link.includes("live-azs-nursing.pantheonsite.io")) {
+        //     internalLinkErr = true;
+        //   }
+        // }
       } catch (e) {
         if (e == "AxiosError: Request failed with status code 404") {
-          // errorLinks.push(link);
-          
-        } else if (link.includes("live-azs-nursing.pantheonsite.io") && e == "AxiosError: Request failed with status code 403") {
-          // check invalid internal links
+          console.log(`404 error found at: ${link}`);
           pnfErrors += `${link}\n`;
+          if (link.includes("live-azs-nursing.pantheonsite.io")) {
+            internalLinkErr = true;
+          }
+        } else if (e.message == "Request failed with status code 403") {
+          console.log(`403 error found 2 at: ${link}`);
+          linkBlockedErrors += `${link}\n`;
+          if (link.includes("live-azs-nursing.pantheonsite.io")) {
+            internalLinkErr = true;
+          }
         }
         else console.log(`Error fetching link ${link}: ${e}`);
       }
@@ -130,14 +145,18 @@ async function checkLinksForErrors(websiteURL, internalLinks) {
   } catch (e) {
     console.error(`Could not fetch the main page: ${e.message}`);
   }
-  errorLinks.push(nursingErros, emailErrors, pnfErrors);
-  if (internalLink) {
-    internalLinks.push("Yes and completed");
-  } else if (pnfErrors != "") {
-    internalLinks.push("Yes, need to complete");
+  // console.log(pnfErrors);
+  
+  let linkStatusMessage = "";
+  if (internalLinkErr) {
+    linkStatusMessage = "Yes, need to complete";
+  } else if (internalLink) {
+    linkStatusMessage = "Yes and completed";
   } else {
-    internalLinks.push("No");
+    linkStatusMessage = "No";
   }
+  internalLinks.push(linkStatusMessage);
+  errorLinks.push(nursingErros, emailErrors, pnfErrors, linkBlockedErrors, linkStatusMessage);
   return errorLinks;
 }
 
@@ -157,11 +176,13 @@ async function main() {
   // Step 2: check links
   for (let i = 0; i < links.length; i++) {
     link = links[i];
-    console.log(`\nStarting checks... ${link}`);
-    // link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
-    const error1 = await checkLinksForErrors(link, internalLinks);
-
-    results.push(error1);
+    if (link) {
+      console.log(`\nStarting checks... ${link}`);
+      // link = link.replace("www.nursing.arizona.edu", "live-azs-nursing.pantheonsite.io");
+      const error1 = await checkLinksForErrors(link, internalLinks);
+      results.push(error1);
+    }
+    
   }
   console.log(internalLinks);
   internalLinks.forEach((link) => {
@@ -170,7 +191,7 @@ async function main() {
   // console.log(results);
 
   // Step 3: write results to Excel
-  // writeExcel(results, outputFilePath);
+  writeExcel(results, outputFilePath);
 
   console.log("Finish!");
   

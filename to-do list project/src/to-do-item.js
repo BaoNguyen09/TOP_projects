@@ -1,12 +1,13 @@
 export class ToDoItem {
     static counter = 0;
 
-    constructor(title, description, dueDate, priority) {
+    constructor(title, description, dueDate, priority, status) {
         this.id = ToDoItem.counter++;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
+        this.status = false;
     }
 
     print() {
@@ -27,5 +28,9 @@ export class ToDoItem {
 
     changePriority(priority) {
         this.priority = priority;
+    }
+
+    changeStatus() {
+        this.status = !this.status;
     }
 }

@@ -11,14 +11,33 @@ let item6 = new ToDoItem("title 2", "description", "today", "4");
 let item7 = new ToDoItem("title 3", "description", "today", "4");
 let item8 = new ToDoItem("title 4", "description", "today", "4");
 let items = [item1, item2, item3, item4];
-let items1 = [item5, item6, item7, item8];
+// let items1 = [item5, item6, item7, item8];
 
-let list1 = new ToDoList(items, "List of tasks 1");
-let list2 = new ToDoList(items1, "List of tasks 2");
-let list3 = new ToDoList(items, "List of tasks 3");
-let list4 = new ToDoList(items, "List of tasks 4");
-let lists = [list1, list2, list3, list4];
+// let list1 = new ToDoList(items, "List of tasks 1");
+// let list2 = new ToDoList(items1, "List of tasks 2");
+// let list3 = new ToDoList(items, "List of tasks 3");
+// let list4 = new ToDoList(items, "List of tasks 4");
+// let lists = [list1, list2, list3, list4];
 
-let project = new Project(lists, "Project 1", "No note");
-project.changeTitle("title changed!");
-project.print();
+// let project = new Project(lists, "Project 1", "No note");
+// project.changeTitle("title changed!");
+// project.print();
+
+let divItems = document.querySelector(".items");
+let ulItems = document.createElement("ul");
+
+for (let item of items) {
+    let divItem = document.createElement("li");
+    divItem.textContent = item.title;
+    divItem.dataset.id = `item: ${item.id}`;
+    ulItems.append(divItem);
+}
+divItems.appendChild(ulItems);
+
+let addItem = document.querySelector(".addItem");
+addItem.addEventListener("click", () => {
+    let divItem = document.createElement("li");
+    divItem.textContent = item5.title;
+    divItem.dataset.id = `item: ${item5.id}`;
+    ulItems.append(divItem);
+});
