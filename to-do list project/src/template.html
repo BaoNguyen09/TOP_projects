@@ -6,9 +6,24 @@
     <title>To Do List</title>
 </head>
 <body>
+    <label for="item_input">Enter New Tasks</label>
+    <input type="text" id="item_input" name="item_input">
+    <label for="priority">Priority</label>
+    <select id="priority" name="priority">
+        <option value="first">I</option>
+        <option value="second">II</option>
+        <option value="third">III</option>
+        <option value="fourth">IV</option>
+    </select>
+    <br>
+    <label for="description">Any notes?</label>
+    <textarea rows="3" cols="30" id="description" name="description"></textarea>
+    <br>
+    <button id="addItem">Add Item</button>
+
     <h1>List of Items</h1>
     <div class="items"></div>
-    <button class="addItem">Add Item</button>
+    <!-- <button class="addItem">Add Item</button> -->
 
     <script src="index.js"></script>
 </body>
